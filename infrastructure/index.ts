@@ -2,6 +2,7 @@ import * as pulumi from '@pulumi/pulumi';
 import * as resources from '@pulumi/azure-native/resources';
 import * as containerregistry from '@pulumi/azure-native/containerregistry';
 import * as docker from '@pulumi/docker';
+import * as containerinstance from '@pulumi/azure-native/containerinstance';
 
 // Load Pulumi configuration settings
 const config = new pulumi.Config();
@@ -59,3 +60,65 @@ const image = new docker.Image(`${prefixName}-image`, {
 
 // Export the container image name (for reference)
 export const containerImage = image.imageName;
+
+// Create a container group in the Azure Container App service and make it publicly accessible.
+const containerGroup = new containerinstance.ContainerGroup(
+  `${prefixName}-container-group`,
+  {
+    resourceGroupName: resourceGroup.name,
+    osType: 'linux',
+    restartPolicy: 'always',
+    imageRegistryCredentials: [
+      {
+        server: registry.loginServer,
+        username: registryCredentials.username,
+        password: registryCredentials.password,
+      },
+    ],
+    containers: [
+      {
+        name: imageName,
+        image: image.imageName,
+        ports: [
+          {
+            port: containerPort,
+            protocol: 'tcp',
+          },
+        ],
+        environmentVariables: [
+          {
+            name: 'PORT',
+            value: containerPort.toString(),
+          },
+          {
+            name: 'WEATHER_API_KEY',
+            value: '62166fa8269680001c0a4e9818f5bae9',
+          },
+        ],
+        resources: {
+          requests: {
+            cpu: cpu,
+            memoryInGB: memory,
+          },
+        },
+      },
+    ],
+    ipAddress: {
+      type: containerinstance.ContainerGroupIpAddressType.Public,
+      dnsNameLabel: `${imageName}`,
+      ports: [
+        {
+          port: publicPort,
+          protocol: 'tcp',
+        },
+      ],
+    },
+  },
+);
+
+// Export the service's IP address, hostname, and fully-qualified URL.
+export const hostname = containerGroup.ipAddress.apply((addr) => addr!.fqdn!);
+export const ip = containerGroup.ipAddress.apply((addr) => addr!.ip!);
+export const url = containerGroup.ipAddress.apply(
+  (addr) => `http://${addr!.fqdn!}:${containerPort}`,
+);
