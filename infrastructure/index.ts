@@ -1,3 +1,20 @@
+import * as docker from '@pulumi/docker';// Define the container image for the service.
+const image = new docker.Image(`${prefixName}-image`, {
+    imageName: pulumi.interpolate`${registry.loginServer}/${imageName}:${imageTag}`,
+    build: {
+        context: appPath,  // Path to the app (Dockerfile location)
+        platform: 'linux/amd64',  // Ensure it runs on Linux
+    },
+    registry: {
+        server: registry.loginServer,
+        username: registryCredentials.username,
+        password: registryCredentials.password,
+    },
+});
+
+// Export the container image name (for reference)
+export const containerImage = image.imageName;
+
 import * as pulumi from '@pulumi/pulumi';
 import * as resources from '@pulumi/azure-native/resources';
 import * as containerregistry from '@pulumi/azure-native/containerregistry';
@@ -42,6 +59,4 @@ const registryCredentials = containerregistry
         };
     });
 
-// Temporary Outputs to Verify Registry Details (Remove After Verification)
-export const acrServer = registry.loginServer;
-export const acrUsername = registryCredentials.username;
+
