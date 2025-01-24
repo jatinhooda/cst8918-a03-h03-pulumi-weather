@@ -1,27 +1,11 @@
-import * as docker from '@pulumi/docker';// Define the container image for the service.
-const image = new docker.Image(`${prefixName}-image`, {
-    imageName: pulumi.interpolate`${registry.loginServer}/${imageName}:${imageTag}`,
-    build: {
-        context: appPath,  // Path to the app (Dockerfile location)
-        platform: 'linux/amd64',  // Ensure it runs on Linux
-    },
-    registry: {
-        server: registry.loginServer,
-        username: registryCredentials.username,
-        password: registryCredentials.password,
-    },
-});
-
-// Export the container image name (for reference)
-export const containerImage = image.imageName;
-
 import * as pulumi from '@pulumi/pulumi';
 import * as resources from '@pulumi/azure-native/resources';
 import * as containerregistry from '@pulumi/azure-native/containerregistry';
+import * as docker from '@pulumi/docker';
 
 // Load Pulumi configuration settings
 const config = new pulumi.Config();
-const appPath = config.require('appPath');
+const appPath = config.require('appPath'); // Path to the app (Dockerfile location)
 let prefixName = config.require('prefixName');
 
 // Ensure prefixName contains only valid alphanumeric characters for ACR
@@ -59,4 +43,19 @@ const registryCredentials = containerregistry
         };
     });
 
+// Define the container image for the service
+const image = new docker.Image(`${prefixName}-image`, {
+    imageName: pulumi.interpolate`${registry.loginServer}/${imageName}:${imageTag}`,
+    build: {
+        context: appPath, // Path to the app (Dockerfile location)
+        platform: 'linux/amd64', // Ensure it runs on Linux
+    },
+    registry: {
+        server: registry.loginServer,
+        username: registryCredentials.username,
+        password: registryCredentials.password,
+    },
+});
 
+// Export the container image name (for reference)
+export const containerImage = image.imageName;
