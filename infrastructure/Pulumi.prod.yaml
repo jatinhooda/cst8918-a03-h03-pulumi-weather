@@ -7,3 +7,7 @@ config:
   cst8918-a03-infra:memory: '2'
   cst8918-a03-infra:prefixName: 'cst8918a03dani0197'
   cst8918-a03-infra:imageTag: 'v0.2.0'
+  openweather:apiKey:
+    secure: AAABAFlVSPxRAPkqXImopjwYhp988+9sCArbq5AdEljuGflVIn+mZNE2ooNQvj2CvC9t4QsHqbPOX4cmKF2hog==
+  cst8918-a03-infra:weatherApiKey:
+    secure: AAABAG2aFtvco8U1mB9X0fiDu/AM61dsUOVIjmeURNtXeE0eiIgWr8H0cwV3TDrr7Q8doeWYDKM8ajQEYDpg3A==

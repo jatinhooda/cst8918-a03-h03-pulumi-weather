@@ -19,6 +19,9 @@ const publicPort = config.requireNumber('publicPort');
 const cpu = config.requireNumber('cpu');
 const memory = config.requireNumber('memory');
 
+// Get the secret API key from Pulumi config
+const weatherApiKey = config.requireSecret('weatherApiKey');
+
 // Create a new Azure Resource Group
 const resourceGroup = new resources.ResourceGroup(`${prefixName}-rg`);
 
@@ -92,7 +95,7 @@ const containerGroup = new containerinstance.ContainerGroup(
           },
           {
             name: 'WEATHER_API_KEY',
-            value: '62166fa8269680001c0a4e9818f5bae9',
+            value: weatherApiKey, // Use the secret here
           },
         ],
         resources: {
